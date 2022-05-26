@@ -23,9 +23,21 @@ properties = {"user": "postgres","password": "indra24","driver": "org.postgresql
 
 df.write.jdbc(url=url, table="test_result", mode=mode, properties=properties)
 
-# df.write \
-#     .jdbc("jdbc:postgresql://localhost:5432/covid19", "public.tablename",
-#           properties={"user": "postgres", "password": "indra24"})
+#load from postgre
+jdbcDF2 = spark.read \
+    .format("jdbc") \
+    .option("url", url)\
+    .option("dbtable", "test_result") \
+    .option("user", "postgres") \
+    .option("password", "indra24") \
+    .option("driver", "org.postgresql.Driver") \
+    .load()
+jdbcDF2.show(5)
+# will return DataFrame
 
+# jdbcDF3 = spark.read \
+#     .jdbc("jdbc:postgresql://localhost:5432/database_example", "public.bonus",
+#           properties={"user": "postgres", "password": "1234", "driver": 'org.postgresql.Driver'})
+# will return DataFrame
 
 # df.show(10,False)   
