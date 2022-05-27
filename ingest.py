@@ -21,6 +21,7 @@ def ingest_data(sparkSession):
         temp_col=[]
         for i in content.schema['col'].dataType:
             temp_col.append("col."+i.name)
+        temp_col=[x.lower() for x in temp_col]
         df2=content.select(temp_col)
         print("READ DATA SUCCESS!!!")
         return df2
@@ -32,7 +33,7 @@ def save_to_hdfs(data):
     # df.write.mode("overwrite").csv("hdfs:///covid19/raw_data_test.csv")
     try:
         print("LOAD TO HDFS...")
-        data.write.mode("overwrite").option("header",True).csv("hdfs:///covid19/raw_data_airflow")
+        data.write.mode("overwrite").option("header",True).csv("hdfs:///covid19/raw_data_airflow2")
         print("LOAD DATA SUCCESS!!!")
     except (Exception) as e:
         print("LOAD DATA FAILED!!!")
