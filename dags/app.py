@@ -1,3 +1,4 @@
+from asyncio import tasks
 from email.policy import default
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
@@ -20,7 +21,13 @@ with DAG(
     start= DummyOperator(
         task_id="start"
     )
+    
+    raw_to_hdfs=BashOperator(
+        task_id="raw_to_hdfs",
+        bash_command="~/spark-3.0.3-bin-hadoop3.2/bin/spark-submit --master yarn --queue dev ~/Documents/ETL_Batch_Processing-COVID19/ingest.py"
+    )
+    
     stop= DummyOperator(
         task_id="stop"
     )
-start>>stop
+start>>raw_to_hdfs>>stop
