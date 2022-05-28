@@ -161,3 +161,7 @@ if __name__=="__main__":
     # dim_disc.show()
     # dim_cases.show()
     print(load)
+    
+    
+    # ./spark-3.0.3-bin-hadoop3.2/bin/spark-submit --master yarn --queue dev --driver-class-path /home/hadoop/postgresql-42.2.6.jar --jars /home/hadoop/postgresql-42.2.6.jar ~/Documents/ETL_Batch_Processing-COVID19/transforms.py
+# 
