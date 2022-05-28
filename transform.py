@@ -1,3 +1,4 @@
+from ntpath import join
 from struct import Struct
 import findspark
 from sqlalchemy import null
@@ -29,8 +30,8 @@ df1=df1.distinct()
 #dim case
 df2=rawdf.select(['suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
 
+#CREATE LOOP FOR UNPIVOT
 # a=['suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal']
-
 
 # col1=[]
 # for i in a:
@@ -38,7 +39,7 @@ df2=rawdf.select(['suspect_diisolasi', 'suspect_discarded', 'closecontact_dikara
 #     col1.append(i.strip("'"))
 # print(col1)
 
-col=['id','status_name','status_detail','status']
+
 df2=df2.limit(1)
 unpivot=df2.selectExpr("stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)")
 unpivot=unpivot.distinct().sort('status')
@@ -48,23 +49,29 @@ newdf=unpivot.withColumn("id",row_number().over(w))
 newdf=newdf.select(['id','status'])
 newdf=newdf.withColumn('status_name',split(newdf['status'],'_').getItem(0)).\
             withColumn('status_detail',split(newdf['status'],'_').getItem(1))
-newdf.show(truncate=False)
-
-# df2[['status_name','status_detail']]=df2['status'].str.split('_',n=1,expand=True)
-# df2=df2[col]
-# # print(df2)
-# df2t=spark.createDataFrame(data=df2)
-
-
-
+# newdf.show(truncate=False)
 
 
 
 
 
 #fact prov daily
-# column_start = ['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal']
-# column_end = ['date', 'province_id', 'status', 'total']
+df3 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+
+unpivot2=df3.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
+
+unpivot2=unpivot2.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+# unpivot2.where(unpivot2["tanggal"]=="2020-08-05").show(truncate=False)
+w= Window.orderBy('tanggal')
+newdf2=unpivot2.withColumn("id",row_number().over(w))
+# newdf2.show()
+# print(newdf2.count())
+
+#join
+newdf=newdf.withColumnRenamed("id","case_id")
+# newdf.show()
+newdf2=newdf2.join(newdf,on="status",how="inner")
+newdf2.select(["id","kode_prov","case_id","tanggal","sum(count)"]).show()
 
 # AGGREGATE
 # data=rawdf.toPandas()
