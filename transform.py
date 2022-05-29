@@ -1,7 +1,7 @@
-from ntpath import join
-from struct import Struct
+# from ntpath import join
+# from struct import Struct
 import findspark
-from sqlalchemy import null
+# from sqlalchemy import null
 findspark.init('/home/hadoop/spark-3.0.3-bin-hadoop3.2/')
 
 from pyspark.sql import SparkSession
@@ -55,12 +55,98 @@ newdf=newdf.withColumn('status_name',split(newdf['status'],'_').getItem(0)).\
 
 
 
-#fact prov daily
-df3 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+# #fact prov daily
+# df3 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
 
-unpivot2=df3.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
+# unpivot2=df3.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
 
-unpivot2=unpivot2.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+# unpivot2=unpivot2.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+# # unpivot2.where(unpivot2["tanggal"]=="2020-08-05").show(truncate=False)
+# w= Window.orderBy('tanggal')
+# newdf2=unpivot2.withColumn("id",row_number().over(w))
+# # newdf2.show()
+# # print(newdf2.count())
+
+# #join
+# newdf=newdf.withColumnRenamed("id","case_id")
+# # newdf.show()
+# newdf2=newdf2.join(newdf,on="status",how="inner")
+# newdf2=newdf2.select(["id","kode_prov","case_id","tanggal","sum(count)"])
+# newdf2=newdf2.withColumnRenamed("kode_prov","province_id").\
+#               withColumnRenamed("tanggal","date").\
+#               withColumnRenamed("sum(count)","total")
+# # newdf2.show()
+# #RENAME COLUMN
+
+
+
+# # fact province monthly
+# df4 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+
+# unpivot3=df4.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
+
+
+# unpivot3=unpivot3.withColumn('month',split(unpivot3['tanggal'],'-').getItem(1))
+# unpivot3=unpivot3.withColumn('tanggal',unpivot3['month'])
+# unpivot3=unpivot3.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+# unpivot3.drop("month")
+# # # unpivot3.where(unpivot3["tanggal"]=="2020-08-05").show(truncate=False)
+# w= Window.orderBy('tanggal')
+# newdf3=unpivot3.withColumn("id",row_number().over(w))
+# # newdf3.show()
+# # # print(newdf3.count())
+# # unpivot3.show()
+# # #join
+# newdf=newdf.withColumnRenamed("id","case_id")
+# # newdf.show()
+# newdf3=newdf3.join(newdf,on="status",how="inner")
+# newdf3=newdf3.select(["id","kode_prov","case_id","tanggal","sum(count)"])
+# newdf3=newdf3.withColumnRenamed("kode_prov","province_id").\
+#               withColumnRenamed("tanggal","month").\
+#               withColumnRenamed("sum(count)","total")
+# # newdf3.show()
+
+
+
+# # fact province yearly
+# df5 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+
+# unpivot4=df5.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
+
+# unpivot4=unpivot4.withColumn('yearly',split(unpivot4['tanggal'],'-').getItem(0))
+# unpivot4=unpivot4.withColumn('tanggal',unpivot4['yearly'])
+# unpivot4=unpivot4.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+# unpivot4.drop("yearly")
+# # # unpivot4.where(unpivot4["tanggal"]=="2020-08-05").show(truncate=False)
+# w= Window.orderBy('tanggal')
+# newdf4=unpivot4.withColumn("id",row_number().over(w))
+# # newdf4.show()
+# # # print(newdf4.count())
+# # unpovot4.show()
+# # #join
+# newdf=newdf.withColumnRenamed("id","case_id")
+# # newdf.show()
+# newdf4=newdf4.join(newdf,on="status",how="inner")
+# newdf4=newdf4.select(["id","kode_prov","case_id","tanggal","sum(count)"])
+# newdf4=newdf4.withColumnRenamed("kode_prov","province_id").\
+#               withColumnRenamed("tanggal","yearly").\
+#               withColumnRenamed("sum(count)","total")
+# # newdf4.show()
+
+
+#################
+
+
+
+
+
+
+#fact district daily
+df3 = rawdf.select(['tanggal', 'kode_kab', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+
+unpivot2=df3.selectExpr("tanggal","kode_kab","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_kab','status'])
+
+unpivot2=unpivot2.groupBy(['tanggal', 'kode_kab', 'status']).sum('count')
 # unpivot2.where(unpivot2["tanggal"]=="2020-08-05").show(truncate=False)
 w= Window.orderBy('tanggal')
 newdf2=unpivot2.withColumn("id",row_number().over(w))
@@ -71,38 +157,65 @@ newdf2=unpivot2.withColumn("id",row_number().over(w))
 newdf=newdf.withColumnRenamed("id","case_id")
 # newdf.show()
 newdf2=newdf2.join(newdf,on="status",how="inner")
-newdf2=newdf2.select(["id","kode_prov","case_id","tanggal","sum(count)"])
-newdf2=newdf2.withColumnRenamed("kode_prov","province_id").\
+newdf2=newdf2.select(["id","kode_kab","case_id","tanggal","sum(count)"])
+newdf2=newdf2.withColumnRenamed("kode_kab","district_id").\
               withColumnRenamed("tanggal","date").\
               withColumnRenamed("sum(count)","total")
-# newdf2.show()
-#RENAME COLUMN
+newdf2.show()
 
 
 
 # fact province monthly
-#fact prov daily
-df4 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+df4 = rawdf.select(['tanggal', 'kode_kab', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
 
-unpivot3=df4.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
+unpivot3=df4.selectExpr("tanggal","kode_kab","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_kab','status'])
 
 
-unpivot3=unpivot3.withColumn('month',split(unpivot3['tanggal'],'-').getItem(1))
+# unpivot3=unpivot3.withColumn('month',split(unpivot3['tanggal'],'-').getItem(0))
+unpivot3=unpivot3.withColumn('month',substring('tanggal',1,7))
+# unpivot3.show()
 unpivot3=unpivot3.withColumn('tanggal',unpivot3['month'])
-unpivot3=unpivot3.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+unpivot3=unpivot3.groupBy(['tanggal', 'kode_kab', 'status']).sum('count')
 unpivot3.drop("month")
-# # unpivot3.where(unpivot3["tanggal"]=="2020-08-05").show(truncate=False)
+# # # unpivot3.where(unpivot3["tanggal"]=="2020-08-05").show(truncate=False)
 w= Window.orderBy('tanggal')
 newdf3=unpivot3.withColumn("id",row_number().over(w))
-newdf3.show()
+# newdf3.show()
 # # print(newdf3.count())
 # unpivot3.show()
 # #join
 newdf=newdf.withColumnRenamed("id","case_id")
 # newdf.show()
 newdf3=newdf3.join(newdf,on="status",how="inner")
-newdf3=newdf3.select(["id","kode_prov","case_id","tanggal","sum(count)"])
-newdf3=newdf3.withColumnRenamed("kode_prov","province_id").\
+newdf3=newdf3.select(["id","kode_kab","case_id","tanggal","sum(count)"])
+newdf3=newdf3.withColumnRenamed("kode_kab","district_id").\
               withColumnRenamed("tanggal","month").\
               withColumnRenamed("sum(count)","total")
 newdf3.show()
+
+
+
+# fact district yearly
+df5 = rawdf.select(['tanggal', 'kode_kab', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+
+unpivot4=df5.selectExpr("tanggal","kode_kab","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_kab','status'])
+
+unpivot4=unpivot4.withColumn('yearly',split(unpivot4['tanggal'],'-').getItem(0))
+unpivot4=unpivot4.withColumn('tanggal',unpivot4['yearly'])
+unpivot4=unpivot4.groupBy(['tanggal', 'kode_kab', 'status']).sum('count')
+unpivot4.drop("yearly")
+# # unpivot4.where(unpivot4["tanggal"]=="2020-08-05").show(truncate=False)
+w= Window.orderBy('tanggal')
+newdf4=unpivot4.withColumn("id",row_number().over(w))
+# newdf4.show()
+# # print(newdf4.count())
+# unpovot4.show()
+# #join
+newdf=newdf.withColumnRenamed("id","case_id")
+# newdf.show()
+newdf4=newdf4.join(newdf,on="status",how="inner")
+newdf4=newdf4.select(["id","kode_kab","case_id","tanggal","sum(count)"])
+newdf4=newdf4.withColumnRenamed("kode_kab","district_id").\
+              withColumnRenamed("tanggal","yearly").\
+              withColumnRenamed("sum(count)","total")
+newdf4.show()
