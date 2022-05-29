@@ -33,13 +33,13 @@ class PostgreSQL:
             return e
         
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
     
-    path='/home/hadoop/Documents/ETL_Batch_Processing-COVID19/'
-    with open(path+'credentials.json','r') as d:
-        data=json.load(d)
-    cfg=data['postgresql']
-    postgre=PostgreSQL(cfg)
-    print(postgre.conn())
-    print(cfg)
+#     path='/home/hadoop/Documents/ETL_Batch_Processing-COVID19/'
+#     with open(path+'credentials.json','r') as d:
+#         data=json.load(d)
+#     cfg=data['postgresql']
+#     postgre=PostgreSQL(cfg)
+#     print(postgre.conn())
+#     print(cfg)
     
