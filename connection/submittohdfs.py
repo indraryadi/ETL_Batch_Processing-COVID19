@@ -8,10 +8,11 @@ spark=SparkSession.builder.appName("Submitted2").config("spark.jars", "file:///h
 print(spark)
 
 # load from hdfs
-# df=spark.read.format("csv").option("header",True).option("separator",",").load("hdfs:///covid19/raw_data_airflow")
+df=spark.read.format("csv").option("header",True).option("separator",",").load("hdfs:///titanic.csv")
+
 # df.show(5)
 # load from local
-df=spark.read.option("multiLine",True).option("inferSchema",True).json("file:///home/hadoop/Documents/ETL_Batch_Processing-COVID19/dataset/data_covid.json")
+# df=spark.read.option("multiLine",True).option("inferSchema",True).json("file:///home/hadoop/Documents/ETL_Batch_Processing-COVID19/dataset/data_covid.json")
 
 # df.printSchema()
 # df.show()
@@ -37,12 +38,12 @@ df=spark.read.option("multiLine",True).option("inferSchema",True).json("file:///
 # print("SUCCESS!!!")
 
 #save to postgre
-# mode = "overwrite"
-# url = "jdbc:postgresql://localhost:5432/covid19"
-# properties = {"user": "postgres","password": "indra24","driver": "org.postgresql.Driver"}
+mode = "overwrite"
+url = "jdbc:postgresql://localhost:5432/covid19"
+properties = {"user": "postgres","password": "indra24","driver": "org.postgresql.Driver"}
 
-# df.write.jdbc(url=url, table="test_load", mode=mode, properties=properties)
-
+df.write.jdbc(url=url, table="test_load", mode=mode, properties=properties)
+print("SUCCESS!!!")
 #load from postgre
 # jdbcDF2 = spark.read \
 #     .format("jdbc") \
