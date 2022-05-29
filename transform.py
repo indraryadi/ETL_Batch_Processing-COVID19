@@ -71,21 +71,38 @@ newdf2=unpivot2.withColumn("id",row_number().over(w))
 newdf=newdf.withColumnRenamed("id","case_id")
 # newdf.show()
 newdf2=newdf2.join(newdf,on="status",how="inner")
-newdf2.select(["id","kode_prov","case_id","tanggal","sum(count)"]).show()
+newdf2=newdf2.select(["id","kode_prov","case_id","tanggal","sum(count)"])
+newdf2=newdf2.withColumnRenamed("kode_prov","province_id").\
+              withColumnRenamed("tanggal","date").\
+              withColumnRenamed("sum(count)","total")
+# newdf2.show()
+#RENAME COLUMN
 
-# AGGREGATE
-# data=rawdf.toPandas()
-# data = data[column_start]
-# data = data.melt(id_vars=['tanggal', 'kode_prov'], var_name='status', value_name='total').sort_values(['tanggal', 'kode_prov', 'status'])
-# data = data.groupby(by=['tanggal', 'kode_prov', 'status']).sum()
-# data = data.reset_index()
 
-# print(data)
-# # REFORMAT
-# data.columns = column_end
-# data['id'] = np.arange(1, data.shape[0]+1)
-# # MERGE
-# dim_case = dim_case.rename({'id': 'case_id'}, axis=1)
-# data = pd.merge(data, dim_case, how='inner', on='status')
 
-# data = data[['id', 'province_id', 'case_id', 'date', 'total']]
+# fact province monthly
+#fact prov daily
+df4 = rawdf.select(['tanggal', 'kode_prov', 'suspect_diisolasi', 'suspect_discarded', 'closecontact_dikarantina', 'closecontact_discarded', 'probable_diisolasi', 'probable_discarded', 'confirmation_sembuh', 'confirmation_meninggal', 'suspect_meninggal', 'closecontact_meninggal', 'probable_meninggal'])
+
+unpivot3=df4.selectExpr("tanggal","kode_prov","stack(11,'suspect_diisolasi', suspect_diisolasi, 'suspect_discarded', suspect_discarded, 'closecontact_dikarantina', closecontact_dikarantina, 'closecontact_discarded', closecontact_discarded, 'probable_diisolasi', probable_diisolasi, 'probable_discarded', probable_discarded, 'confirmation_sembuh', confirmation_sembuh, 'confirmation_meninggal', confirmation_meninggal, 'suspect_meninggal', suspect_meninggal, 'closecontact_meninggal', closecontact_meninggal, 'probable_meninggal', probable_meninggal) as (status,count)").sort(['tanggal','kode_prov','status'])
+
+
+unpivot3=unpivot3.withColumn('month',split(unpivot3['tanggal'],'-').getItem(1))
+unpivot3=unpivot3.withColumn('tanggal',unpivot3['month'])
+unpivot3=unpivot3.groupBy(['tanggal', 'kode_prov', 'status']).sum('count')
+unpivot3.drop("month")
+# # unpivot3.where(unpivot3["tanggal"]=="2020-08-05").show(truncate=False)
+w= Window.orderBy('tanggal')
+newdf3=unpivot3.withColumn("id",row_number().over(w))
+newdf3.show()
+# # print(newdf3.count())
+# unpivot3.show()
+# #join
+newdf=newdf.withColumnRenamed("id","case_id")
+# newdf.show()
+newdf3=newdf3.join(newdf,on="status",how="inner")
+newdf3=newdf3.select(["id","kode_prov","case_id","tanggal","sum(count)"])
+newdf3=newdf3.withColumnRenamed("kode_prov","province_id").\
+              withColumnRenamed("tanggal","month").\
+              withColumnRenamed("sum(count)","total")
+newdf3.show()
